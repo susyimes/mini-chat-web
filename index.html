@@ -24,11 +24,17 @@
     // 2) 改成你 wrangler secret put APP_TOKEN 设置的值
     const APP_TOKEN = "cf67d811eee44aef81e6d6593bac991ddff474e7f4994a10a93d330b99379c05";
 
-    document.getElementById("send").addEventListener("click", async () => {
+    const sendBtn = document.getElementById("send");
+    sendBtn.addEventListener("click", async () => {
       const text = document.getElementById("input").value.trim();
       const out = document.getElementById("output");
       if (!text) return;
-      out.textContent = "请求中...";
+
+      sendBtn.disabled = true;
+      out.textContent = "请求中...（最多等待 20 秒）";
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
 
       try {
         const resp = await fetch(`${API_BASE}/chat`, {
@@ -37,14 +43,22 @@
             "Content-Type": "application/json",
             "X-App-Token": APP_TOKEN
           },
-          body: JSON.stringify({ message: text })
+          body: JSON.stringify({ message: text }),
+          signal: controller.signal
         });
 
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || "请求失败");
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || `请求失败（HTTP ${resp.status}）`);
         out.textContent = data.reply || "(空响应)";
       } catch (e) {
-        out.textContent = "错误: " + e.message;
+        if (e.name === "AbortError") {
+          out.textContent = "请求超时（20秒）。当前网络可能无法直连服务，请稍后重试或切换网络/VPN。";
+        } else {
+          out.textContent = "错误: " + (e.message || "未知错误");
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        sendBtn.disabled = false;
       }
     });
   </script>
