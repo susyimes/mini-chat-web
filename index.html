@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Chat</title>
+  <style>
+    body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 12px; }
+    textarea { width: 100%; height: 120px; font-size: 14px; }
+    button { margin-top: 10px; padding: 8px 14px; cursor: pointer; }
+    pre { background: #111; color: #0f0; padding: 12px; white-space: pre-wrap; min-height: 80px; }
+  </style>
+</head>
+<body>
+  <h2>Mini Chat</h2>
+  <textarea id="input" placeholder="输入你的问题..."></textarea>
+  <br />
+  <button id="send">发送</button>
+  <pre id="output"></pre>
+
+  <script>
+    // 1) 改成你的 Worker 地址
+    const API_BASE = "https://mini-chat-worker.your-subdomain.workers.dev";
+    // 2) 改成你 wrangler secret put APP_TOKEN 设置的值
+    const APP_TOKEN = "replace-with-your-app-token";
+
+    document.getElementById("send").addEventListener("click", async () => {
+      const text = document.getElementById("input").value.trim();
+      const out = document.getElementById("output");
+      if (!text) return;
+      out.textContent = "请求中...";
+
+      try {
+        const resp = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-App-Token": APP_TOKEN
+          },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "请求失败");
+        out.textContent = data.reply || "(空响应)";
+      } catch (e) {
+        out.textContent = "错误: " + e.message;
+      }
+    });
+  </script>
+</body>
+</html>
