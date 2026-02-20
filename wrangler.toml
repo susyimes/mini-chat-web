@@ -1,8 +1,8 @@
-name = "mini-chat-worker"
+name = "mini-chat-web"
 main = "worker/src/index.js"
 compatibility_date = "2026-02-20"
 
 [vars]
 MODEL_NAME = "gpt-5.2"
 UPSTREAM_BASE_URL = "https://api.openai.com"
-CORS_ORIGIN = "*"
+CORS_ORIGIN = "https://susyimes.github.io"
