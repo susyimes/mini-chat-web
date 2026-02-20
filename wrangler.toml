@@ -1,0 +1,8 @@
+name = "mini-chat-worker"
+main = "worker/src/index.js"
+compatibility_date = "2026-02-20"
+
+[vars]
+MODEL_NAME = "gpt-4o-mini"
+UPSTREAM_BASE_URL = "https://api.openai.com"
+CORS_ORIGIN = "*"
